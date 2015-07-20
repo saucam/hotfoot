@@ -6,6 +6,7 @@
     <version>1.0-SNAPSHOT</version>
   </parent>
 
+  <groupId>com.guavus.hotfoot</groupId>
   <artifactId>data-gen</artifactId>
   <prerequisites>
     <maven>3.0.4</maven>
@@ -39,7 +40,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>com.guavus</groupId>
+      <groupId>com.guavus.hotfoot</groupId>
       <artifactId>common</artifactId>
       <version>${project.version}</version>
     </dependency>
