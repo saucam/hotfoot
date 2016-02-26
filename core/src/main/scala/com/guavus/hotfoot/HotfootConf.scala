@@ -3,8 +3,6 @@ package com.guavus.hotfoot
 import java.util.Properties
 import java.util.concurrent.ConcurrentHashMap
 
-import org.apache.spark.util.Utils
-
 import scala.collection.immutable
 import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
@@ -19,7 +17,8 @@ private[hotfoot] object HotfootConf {
 /**
  * Created by yash.datta on 15/06/15.
  */
-private[hotfoot] class HotfootConf(hotfootProperties: HashMap[String, String])  extends Serializable {
+private[hotfoot] class HotfootConf(hotfootProperties: HashMap[String, String])
+  extends Serializable {
   import HotfootConf._
 
   // Load any spark.* system properties

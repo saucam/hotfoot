@@ -52,7 +52,6 @@ object Hotfoot extends Logging {
       printStream.println(appArgs)
     }
 
-    // scalastyle:on println
     val sparkConf = new SparkConf()
       .setAppName("Hotfoot")
       .setMaster("local[2]")
@@ -76,6 +75,7 @@ object Hotfoot extends Logging {
 
     println(" schema = " + schema.prettyJson)
 
+    // scalastyle:on println
     val attributes = SchemaParser.toAttributes(schema)
     // select output format
     val nextRow = new SpecificMutableRow(attributes.map(_.dataType))

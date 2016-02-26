@@ -25,6 +25,7 @@ private[hotfoot] class HotfootArguments(args: Seq[String], env: Map[String, Stri
   var childArgs: ArrayBuffer[String] = new ArrayBuffer[String]()
 
   /** Default properties present in the currently defined defaults file. */
+  // scalastyle:off println
   lazy val defaultSparkProperties: HashMap[String, String] = {
     val defaultProperties = new HashMap[String, String]()
     if (verbose) Hotfoot.printStream.println(s"Using properties file: $propertiesFile")
@@ -37,6 +38,7 @@ private[hotfoot] class HotfootArguments(args: Seq[String], env: Map[String, Stri
     defaultProperties
   }
 
+  // scalastyle:on println
   // Set parameters from command line arguments
   try {
     parse(args.toList)
@@ -98,7 +100,7 @@ private[hotfoot] class HotfootArguments(args: Seq[String], env: Map[String, Stri
     }
 
     if (schemaFile == null) {
-      Hotfoot.printErrorAndExit("Must specify a schema json file resource (JAR or Python or R file)")
+      Hotfoot.printErrorAndExit("Must specify schema json file resource (JAR or Python or R file)")
     }
 
     if (numRecords <= 0) {
@@ -180,6 +182,7 @@ private[hotfoot] class HotfootArguments(args: Seq[String], env: Map[String, Stri
     childArgs ++= extra
   }
 
+  // scalastyle:off println
   private def printUsageAndExit(exitCode: Int, unknownParam: Any = null): Unit = {
     val outStream = Hotfoot.printStream
     if (unknownParam != null) {
@@ -204,6 +207,7 @@ private[hotfoot] class HotfootArguments(args: Seq[String], env: Map[String, Stri
         |
       """.stripMargin
     )
+    // scalastyle:on println
     Hotfoot.exitFn()
   }
 

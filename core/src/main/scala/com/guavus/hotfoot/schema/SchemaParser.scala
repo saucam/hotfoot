@@ -3,6 +3,7 @@ package com.guavus.hotfoot.schema
 import java.io._
 
 import com.guavus.hotfoot.Hotfoot._
+import com.guavus.hotfoot.util.Utils
 import org.apache.spark.sql.catalyst.expressions.{AttributeReference, Attribute}
 import org.apache.spark.Logging
 import org.apache.spark.sql.types._
@@ -35,7 +36,8 @@ object SchemaParser extends Logging  {
 
   def toAttributes(dType: DataType): Seq[AttributeReference] = {
     dType match {
-      case s: StructType => s.map(f => AttributeReference(f.name, f.dataType, f.nullable, f.metadata)())
+      case s: StructType => s.map(
+        f => AttributeReference(f.name, f.dataType, f.nullable, f.metadata)())
       case other => sys.error(s"Cannot convert $dType to row")
     }
   }
@@ -95,7 +97,7 @@ object SchemaParser extends Logging  {
     ("pyClass", _),
     ("sqlType", _),
     ("type", JString("udt"))) =>
-      Class.forName(udtClass).newInstance().asInstanceOf[UserDefinedType[_]]
+      Utils.classForName(udtClass).newInstance().asInstanceOf[UserDefinedType[_]]
   }
 
   private def parseStructField(json: JValue): StructField = json match {
