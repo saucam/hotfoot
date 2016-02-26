@@ -33,7 +33,7 @@ object SchemaParser extends Logging  {
     toAttributes(dType)
   }
 
-  def toAttributes(dType: DataType): Seq[Attribute] = {
+  def toAttributes(dType: DataType): Seq[AttributeReference] = {
     dType match {
       case s: StructType => s.map(f => AttributeReference(f.name, f.dataType, f.nullable, f.metadata)())
       case other => sys.error(s"Cannot convert $dType to row")
@@ -54,7 +54,7 @@ object SchemaParser extends Logging  {
   private def nameToType(name: String): DataType = {
     val FIXED_DECIMAL = """decimal\(\s*(\d+)\s*,\s*(\d+)\s*\)""".r
     name match {
-      case "decimal" => DecimalType.Unlimited
+      case "decimal" => DecimalType.USER_DEFAULT
       case FIXED_DECIMAL(precision, scale) => DecimalType(precision.toInt, scale.toInt)
       case other => nonDecimalNameToType(other)
     }

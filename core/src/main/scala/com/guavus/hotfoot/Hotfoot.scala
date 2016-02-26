@@ -9,7 +9,7 @@ import java.io.{File, PrintStream}
 import org.apache.spark._
 import org.apache.spark.Logging
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, Row, SQLContext}
+import org.apache.spark.sql.{CreateDataFrame, DataFrame, Row, SQLContext}
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.execution.LogicalRDD
@@ -27,6 +27,7 @@ object Hotfoot extends Logging {
 
   private[hotfoot] var exitFn: () => Unit = () => System.exit(1)
   private[hotfoot] var printStream: PrintStream = System.err
+  // scalastyle:off println
   private[hotfoot] def printWarning(str: String): Unit = printStream.println("Warning: " + str)
   private[hotfoot] def printVersionAndExit(): Unit = {
     printStream.println("""Welcome to
@@ -51,6 +52,7 @@ object Hotfoot extends Logging {
       printStream.println(appArgs)
     }
 
+    // scalastyle:on println
     val sparkConf = new SparkConf()
       .setAppName("Hotfoot")
       .setMaster("local[2]")
@@ -63,7 +65,7 @@ object Hotfoot extends Logging {
 
     // parse schema from json file
     // better option to make it a json RDD
-    //val schema = sqlContext.jsonFile(appArgs.schemaFile)
+    // val schema = sqlContext.jsonFile(appArgs.schemaFile)
     // schema.printSchema()
     // val schema = new Schema.Parser().parse(appArgs.schemaFile)
     val schema = try (SchemaParser.parseJson(new File(appArgs.schemaFile)))
@@ -80,7 +82,7 @@ object Hotfoot extends Logging {
 
     val columnGenerators = attributes.map { attribute =>
       val columnType = ColumnType(attribute.dataType)
-      //val initialBufferSize = columnType.defaultSize * batchSize
+      // val initialBufferSize = columnType.defaultSize * batchSize
       ColumnGenerator(attribute.dataType, 0, attribute.name)
     }.toArray
 
@@ -112,8 +114,7 @@ object Hotfoot extends Logging {
       rows
     }
 
-    val logicalPlan = LogicalRDD(attributes, rdd)(sqlContext)
-    val df = new DataFrame(sqlContext, logicalPlan)
+    val df = CreateDataFrame.getDataFrame(sqlContext, rdd, attributes)
     df.write.parquet(appArgs.outputPath)
 
   }

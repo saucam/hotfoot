@@ -17,11 +17,7 @@ import org.apache.spark.unsafe.types.UTF8String
 import scala.util.Random
 
 /**
- * Created by yash.datta on 12/07/15.
- */
-/**
- * An abstract class that represents type of a column. Used to append/extract Java objects into/from
- * the underlying [[ByteBuffer]] of a column.
+ * An abstract class that represents type of a column. Used to generate objects of a column.
  *
  * @tparam JvmType Underlying Java type to represent the elements.
  */
