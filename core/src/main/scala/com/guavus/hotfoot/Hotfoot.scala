@@ -9,16 +9,14 @@ import java.io.{File, PrintStream}
 import org.apache.spark._
 import org.apache.spark.Logging
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.InternalRow
+import org.apache.spark.sql.execution.LogicalRDD
 
 // import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.columnar.hotfoot._
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.columnar.ColumnAccessor
 
 // import org.apache.spark.sql.columnar.{ColumnType}
 
@@ -89,16 +87,16 @@ object Hotfoot extends Logging {
     // TODO: this must be done for any indexing column marked by user in schema
     val rddIndex: RDD[Int] = sc.parallelize(0 to appArgs.numRecords)
 
-    val rdd: RDD[Row] = rddIndex.mapPartitions{ indexIter =>
+    val rdd: RDD[InternalRow] = rddIndex.mapPartitions{ indexIter =>
 
       val nextRow = new SpecificMutableRow(attributes.map(_.dataType))
 
       val rows = indexIter.flatMap { partition =>
 
         // Generate rows via ColumnGenerators
-        new Iterator[Row] {
-          private[this] val rowLen = nextRow.length
-          override def next(): Row = {
+        new Iterator[InternalRow] {
+          private[this] val rowLen = nextRow.numFields
+          override def next(): InternalRow = {
             var i = 0
             while (i < rowLen) {
               columnGenerators(i).generateTo(nextRow, i)
@@ -114,7 +112,8 @@ object Hotfoot extends Logging {
       rows
     }
 
-    val df = sqlContext.createDataFrame(rdd, schema.asInstanceOf[StructType])
+    val logicalPlan = LogicalRDD(attributes, rdd)(sqlContext)
+    val df = new DataFrame(sqlContext, logicalPlan)
     df.write.parquet(appArgs.outputPath)
 
   }
