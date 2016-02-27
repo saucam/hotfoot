@@ -8,7 +8,7 @@ import org.apache.spark.sql.execution.LogicalRDD
 /**
  * Created by yash.datta on 26/02/16.
  */
-object CreateDataFrame {
+object DataFrameFactory {
   def getDataFrame(sqlContext: SQLContext,
     catalystRows: RDD[InternalRow],
     attributes: Seq[AttributeReference]): DataFrame = {

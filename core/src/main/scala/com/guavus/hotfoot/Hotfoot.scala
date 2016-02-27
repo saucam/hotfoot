@@ -1,7 +1,5 @@
 package com.guavus.hotfoot
 
-import java.nio.ByteBuffer
-
 import com.guavus.hotfoot.schema.SchemaParser
 
 import java.io.{File, PrintStream}
@@ -9,10 +7,9 @@ import java.io.{File, PrintStream}
 import org.apache.spark._
 import org.apache.spark.Logging
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{CreateDataFrame, DataFrame, Row, SQLContext}
+import org.apache.spark.sql._
 import org.apache.spark.sql.catalyst.expressions._
 import org.apache.spark.sql.catalyst.InternalRow
-import org.apache.spark.sql.execution.LogicalRDD
 
 // import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.columnar.hotfoot._
@@ -114,7 +111,7 @@ object Hotfoot extends Logging {
       rows
     }
 
-    val df = CreateDataFrame.getDataFrame(sqlContext, rdd, attributes)
+    val df = DataFrameFactory.getDataFrame(sqlContext, rdd, attributes)
     df.write.parquet(appArgs.outputPath)
 
   }
