@@ -4,7 +4,7 @@
   <groupId>com.guavus.hotfoot</groupId>
   <artifactId>hotfoot-parent</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <name>hotfoot</name>
+  <name>Hotfoot Project Parent POM </name>
   <packaging>pom</packaging>
   <description>HotFoot</description>
   <inceptionYear>2015</inceptionYear>
@@ -30,6 +30,7 @@
     <module>common</module>
     <module>core</module>
     <module>data-gen</module>
+    <module>assembly</module>
   </modules>
 
   <properties>
@@ -44,6 +45,9 @@
     <MaxPermGen>512m</MaxPermGen>
     <CodeCacheSize>512m</CodeCacheSize>
     <java.version>1.8</java.version>
+    <scala.binary.version>2.10.4</scala.binary.version>
+    <test.java.home>${java.home}</test.java.home>
+    <test.exclude.tags></test.exclude.tags>
   </properties>
 
   <repositories>
@@ -224,6 +228,41 @@
             </compilerArgs>
           </configuration>
         </plugin>
+        <plugin>
+          <groupId>org.antlr</groupId>
+          <artifactId>antlr3-maven-plugin</artifactId>
+          <version>3.5.2</version>
+        </plugin>
+        <!-- Surefire runs all Java tests -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.19.1</version>
+          <!-- Note config is repeated in scalatest config -->
+          <configuration>
+            <includes>
+              <include>**/Test*.java</include>
+              <include>**/*Test.java</include>
+              <include>**/*TestCase.java</include>
+              <include>**/*Suite.java</include>
+            </includes>
+            <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+            <argLine>-Xmx3g -Xss4096k -XX:MaxPermSize=${MaxPermGen} -XX:ReservedCodeCacheSize=512m</argLine>
+            <environmentVariables>
+              <SPARK_PREPEND_CLASSES>1</SPARK_PREPEND_CLASSES>
+              <SPARK_TESTING>1</SPARK_TESTING>
+              <JAVA_HOME>${test.java.home}</JAVA_HOME>
+            </environmentVariables>
+            <systemProperties>
+              <derby.system.durability>test</derby.system.durability>
+              <java.awt.headless>true</java.awt.headless>
+              <java.io.tmpdir>${project.build.directory}/tmp</java.io.tmpdir>
+              <hotfoot.testing>1</hotfoot.testing>
+            </systemProperties>
+            <failIfNoTests>false</failIfNoTests>
+            <excludedGroups>${test.exclude.tags}</excludedGroups>
+          </configuration>
+        </plugin>
         <!-- Scalatest runs all Scala tests -->
         <plugin>
           <groupId>org.scalatest</groupId>
@@ -268,6 +307,34 @@
             </execution>
           </executions>
         </plugin>
+       <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>3.0.0</version>
+          <configuration>
+            <filesets>
+              <fileset>
+                <directory>work</directory>
+              </fileset>
+              <fileset>
+                <directory>checkpoint</directory>
+              </fileset>
+              <fileset>
+                <directory>lib_managed</directory>
+              </fileset>
+            </filesets>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>2.10.3</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>exec-maven-plugin</artifactId>
+          <version>1.4.0</version>
+        </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-assembly-plugin</artifactId>
@@ -309,6 +376,63 @@
     </pluginManagement>
 
     <plugins>
+      <!--
+  The shade plug-in is used here to create effective pom's (see SPARK-3812), and also
+  remove references from the shaded libraries from artifacts published by Spark.
+-->
+      <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-shade-plugin</artifactId>
+      <configuration>
+        <shadedArtifactAttached>false</shadedArtifactAttached>
+        <artifactSet>
+          <includes>
+            <!-- At a minimum we must include this to force effective pom generation -->
+            <include>org.spark-project.spark:unused</include>
+
+            <include>org.eclipse.jetty:jetty-io</include>
+            <include>org.eclipse.jetty:jetty-http</include>
+            <include>org.eclipse.jetty:jetty-continuation</include>
+            <include>org.eclipse.jetty:jetty-servlet</include>
+            <include>org.eclipse.jetty:jetty-plus</include>
+            <include>org.eclipse.jetty:jetty-security</include>
+            <include>org.eclipse.jetty:jetty-util</include>
+            <include>org.eclipse.jetty:jetty-server</include>
+            <include>com.google.guava:guava</include>
+          </includes>
+        </artifactSet>
+        <relocations>
+          <relocation>
+            <pattern>org.eclipse.jetty</pattern>
+            <shadedPattern>org.spark-project.jetty</shadedPattern>
+            <includes>
+              <include>org.eclipse.jetty.**</include>
+            </includes>
+          </relocation>
+          <relocation>
+            <pattern>com.google.common</pattern>
+            <shadedPattern>org.spark-project.guava</shadedPattern>
+          </relocation>
+        </relocations>
+      </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+      </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
@@ -336,6 +460,30 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>create-tmp-dir</id>
+            <phase>generate-test-resources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <mkdir dir="${project.build.directory}/tmp" />
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Enable surefire and scalatest in all children, in one place: -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
       </plugin>
       <plugin>
         <groupId>org.scalatest</groupId>
