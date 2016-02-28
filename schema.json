@@ -1,0 +1,20 @@
+{"type":"struct","fields":
+                        [
+                        {"name":"a",
+                          "type":"integer",
+                          "nullable":true,
+                          "metadata":{}},
+                       {"name":"b",
+                        "type":"integer",
+                        "nullable":true,
+                        "metadata":{}},
+                       {"name":"d",
+                         "type":"integer",
+                         "nullable":true,
+                         "metadata":{}},
+                       {"name":"part",
+                         "type":"integer",
+                         "nullable":true,
+                         "metadata":{}}
+                         ]
+ }

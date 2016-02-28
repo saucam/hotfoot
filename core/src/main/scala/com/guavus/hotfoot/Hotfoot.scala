@@ -18,7 +18,7 @@ import org.apache.spark.sql.types._
 // import org.apache.spark.sql.columnar.{ColumnType}
 
 /**
- * @author ${user.name}
+ * Hotfoot
  */
 object Hotfoot extends Logging {
 

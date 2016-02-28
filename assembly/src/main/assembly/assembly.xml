@@ -1,0 +1,67 @@
+<assembly>
+  <id>dist</id>
+  <formats>
+    <format>tar.gz</format>
+    <format>dir</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+
+  <fileSets>
+    <fileSet>
+      <includes>
+        <include>README</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>
+        ${project.parent.basedir}/sbin/
+      </directory>
+      <outputDirectory>sbin</outputDirectory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>
+        ${project.parent.basedir}/bin/
+      </directory>
+      <outputDirectory>bin</outputDirectory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>
+        ${project.parent.basedir}/assembly/target/${hotfoot.jar.dir}
+      </directory>
+      <outputDirectory></outputDirectory>
+      <includes>
+        <include>${hotfoot.jar.basename}</include>
+      </includes>
+    </fileSet>
+  </fileSets>
+
+  <dependencySets>
+    <dependencySet>
+      <includes>
+        <include>com.guavus.hotfoot:*:jar</include>
+      </includes>
+      <excludes>
+        <exclude>com.guavus.hotfoot:hotfoot-assembly:jar</exclude>
+      </excludes>
+    </dependencySet>
+    <dependencySet>
+      <outputDirectory>lib</outputDirectory>
+      <useTransitiveDependencies>true</useTransitiveDependencies>
+      <unpack>false</unpack>
+      <scope>runtime</scope>
+      <useProjectArtifact>false</useProjectArtifact>
+      <excludes>
+        <exclude>org.apache.hadoop:*:jar</exclude>
+        <exclude>com.guavus.hotfoot:*:jar</exclude>
+      </excludes>
+    </dependencySet>
+  </dependencySets>
+
+</assembly>
+
