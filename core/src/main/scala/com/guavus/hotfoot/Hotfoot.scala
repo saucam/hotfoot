@@ -51,7 +51,6 @@ object Hotfoot extends Logging {
 
     val sparkConf = new SparkConf()
       .setAppName("Hotfoot")
-      .setMaster("local[2]")
       .set("spark.executor.memory", "2g")
 
     val sc = new SparkContext(sparkConf)
@@ -77,16 +76,22 @@ object Hotfoot extends Logging {
     // select output format
     val nextRow = new SpecificMutableRow(attributes.map(_.dataType))
 
-    val columnGenerators = attributes.map { attribute =>
+    /* val columnGenerators = attributes.map { attribute =>
       val columnType = ColumnType(attribute.dataType)
       // val initialBufferSize = columnType.defaultSize * batchSize
       ColumnGenerator(attribute.dataType, 0, attribute.name)
-    }.toArray
+    }.toArray */
 
     // TODO: this must be done for any indexing column marked by user in schema
     val rddIndex: RDD[Int] = sc.parallelize(0 to appArgs.numRecords)
 
     val rdd: RDD[InternalRow] = rddIndex.mapPartitions{ indexIter =>
+
+      val columnGenerators = attributes.map { attribute =>
+        val columnType = ColumnType(attribute.dataType)
+        // val initialBufferSize = columnType.defaultSize * batchSize
+        ColumnGenerator(attribute.dataType, 0, attribute.name)
+      }.toArray
 
       val nextRow = new SpecificMutableRow(attributes.map(_.dataType))
 

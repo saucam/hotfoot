@@ -16,7 +16,7 @@ private[hotfoot] trait NullableColumnGenerator extends ColumnGenerator {
   private var pos: Int = 0
 
   abstract override def initialize(size: Int, columnName: String = ""): Unit = {
-    nullCount = nullsBuffer.getInt()
+    nullCount = 0
     nextNullIndex = if (nullCount > 0) nullsBuffer.getInt() else -1
     pos = 0
     super.initialize(size, columnName)

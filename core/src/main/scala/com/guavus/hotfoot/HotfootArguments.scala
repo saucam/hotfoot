@@ -106,6 +106,10 @@ private[hotfoot] class HotfootArguments(args: Seq[String], env: Map[String, Stri
     if (numRecords <= 0) {
       Hotfoot.printErrorAndExit("Must specify number of records greater than 0")
     }
+
+    if (outputPath == null || outputPath.length == 0) {
+      Hotfoot.printErrorAndExit("Must specify a valid output path")
+    }
   }
 
   override def toString: String = {
