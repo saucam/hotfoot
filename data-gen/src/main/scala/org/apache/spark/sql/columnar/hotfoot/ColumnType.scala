@@ -393,6 +393,8 @@ private[columnar] trait DirectCopyColumnType[JvmType] extends ColumnType[JvmType
 }
 
 object STRING extends NativeColumnType(StringType, 8) {
+  val MAX_DEFAULT_STRING_LENGTH = 100
+
   override def actualSize(row: InternalRow, ordinal: Int): Int = {
     row.getString(ordinal).getBytes("utf-8").length + 4
   }
@@ -412,7 +414,7 @@ object STRING extends NativeColumnType(StringType, 8) {
   override def generate(): UTF8String = {
     // generate a random value ?
     // TODO honor the user rules while generating value ?
-    val length = random.nextInt()
+    val length = random.nextInt(MAX_DEFAULT_STRING_LENGTH)
     UTF8String.fromString(random.nextString(length))
   }
 
@@ -484,6 +486,8 @@ private[columnar] object COMPACT_DECIMAL {
 private[hotfoot] sealed abstract class ByteArrayColumnType[JvmType](val defaultSize: Int)
   extends ColumnType[JvmType] with DirectCopyColumnType[JvmType] {
 
+  val MAX_DEFAULT_ARRAY_LENGTH = 100
+
   def serialize(value: JvmType): Array[Byte]
   def deserialize(bytes: Array[Byte]): JvmType
 
@@ -502,7 +506,7 @@ private[hotfoot] sealed abstract class ByteArrayColumnType[JvmType](val defaultS
   override def generate(): JvmType = {
     // generate a random value ?
     // TODO honor the user rules while generating value ?
-    val length = random.nextInt()
+    val length = random.nextInt(MAX_DEFAULT_ARRAY_LENGTH)
     val bytes = new Array[Byte](length)
     random.nextBytes(bytes)
     deserialize(bytes)
@@ -535,7 +539,7 @@ private[hotfoot] case class LARGE_DECIMAL(precision: Int, scale: Int)
   override val dataType: DataType = DecimalType(precision, scale)
 
   override def generate(): Decimal = {
-    val length = random.nextInt()
+    val length = 12
     val bytes = new Array[Byte](length)
     random.nextBytes(bytes)
     val javaDecimal = new BigDecimal(new BigInteger(bytes), scale)
