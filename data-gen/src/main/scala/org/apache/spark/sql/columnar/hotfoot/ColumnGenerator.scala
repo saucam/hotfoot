@@ -1,6 +1,9 @@
 package org.apache.spark.sql.columnar.hotfoot
 
+import com.guavus.hotfoot._
+
 import java.nio.{ByteBuffer, ByteOrder}
+
 import org.apache.spark.sql.catalyst.expressions.MutableRow
 import org.apache.spark.sql.catalyst.expressions.{UnsafeArrayData, UnsafeMapData, UnsafeRow}
 
@@ -14,10 +17,6 @@ import org.apache.spark.sql.types._
  * Instead of directly returning it, the value is set into some field of
  * a [[MutableRow]]. In this way, boxing cost can be avoided by leveraging the setter methods
  * for primitive values provided by [[MutableRow]].
- */
-
-/**
- * Created by yash.datta on 05/07/15.
  */
 
 private[hotfoot] trait ColumnGenerator {
@@ -58,9 +57,11 @@ private[hotfoot] abstract class BasicColumnGenerator[JvmType](
   }
 
   def generateSingle(row: MutableRow, ordinal: Int): Unit = {
-    columnType.generate(row, ordinal)
+    columnType.setField(row, ordinal, generate)
     countGenerated += 1
   }
+
+  def generate(): JvmType = columnType.generate
 }
 
 private[hotfoot] class NullColumnGenerator()
@@ -125,12 +126,12 @@ object ColumnGenerator {
   var numVals = 0
   def apply(dataType: DataType, vals: Int, columnName: String = ""): ColumnGenerator = {
     numVals = if (vals == 0) DEFAULT_INITIAL_NUM_VALS else vals
-    val generator: ColumnGenerator = dataType match {
+    val colGenerator: ColumnGenerator = dataType match {
       case NullType => new NullColumnGenerator
       case BooleanType => new BooleanColumnGenerator
       case ByteType => new ByteColumnGenerator
       case ShortType => new ShortColumnGenerator
-      case IntegerType | DateType => new IntColumnGenerator
+      case IntegerType | DateType => new RandomIntGenerator
       case LongType | TimestampType => new LongColumnGenerator
       case FloatType => new FloatColumnGenerator
       case DoubleType => new DoubleColumnGenerator
@@ -147,7 +148,7 @@ object ColumnGenerator {
         throw new Exception(s"not support type: $other")
     }
 
-    generator.initialize(numVals, columnName)
-    generator
+    colGenerator.initialize(numVals, columnName)
+    colGenerator
   }
 }
